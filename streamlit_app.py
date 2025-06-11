@@ -1,24 +1,28 @@
 
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 st.set_page_config(page_title="Robô Fooderoso da Cotação", layout="wide")
 
 st.title("🤖 Robô Fooderoso da Cotação")
-st.write("Cole aqui o texto da cotação ou envie uma imagem com o pedido.")
+st.write("Cole abaixo o pedido do cliente ou envie uma imagem com o print do WhatsApp.")
 
-# Campo de texto
-cotacao_texto = st.text_area("📝 Cotação (texto)", height=200)
+# Área para colar o pedido
+cotacao_texto = st.text_area("📝 Pedido (texto ou colado do WhatsApp)", height=200)
 
-# Upload de imagem
-imagem = st.file_uploader("📷 Ou envie uma imagem com o pedido", type=["png", "jpg", "jpeg"])
+# Upload de imagem (apenas interface, OCR ainda não ativo)
+imagem = st.file_uploader("📷 Envie imagem do pedido (print, etiqueta, etc.)", type=["png", "jpg", "jpeg"])
 
-# Botão para gerar PDF (ainda simbólico)
+# Simulação de geração de PDF
 if st.button("📄 Gerar Cotação em PDF"):
     if cotacao_texto or imagem:
-        st.success("PDF gerado com sucesso! (simulado)")
+        with st.spinner("Gerando PDF da cotação..."):
+            # Simulação de análise e geração
+            st.success("✅ Cotação gerada com sucesso! (PDF simulado)")
+            st.markdown("🔗 Em breve: link para baixar PDF aqui.")
     else:
-        st.warning("Por favor, insira o texto ou envie uma imagem.")
+        st.warning("⚠️ Por favor, cole o pedido ou envie uma imagem.")
 
 st.markdown("---")
-st.caption("Desenvolvido para Rio Quality • Versão básica de teste")
+st.caption("Versão inicial do Robô Fooderoso • Desenvolvido para Rio Quality")
