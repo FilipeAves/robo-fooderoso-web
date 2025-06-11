@@ -3,6 +3,7 @@ import streamlit as st
 from fpdf import FPDF
 import tempfile
 import os
+import re
 
 st.set_page_config(page_title="Robô Fooderoso da Cotação", layout="wide")
 st.title("🤖 Robô Fooderoso da Cotação")
@@ -26,7 +27,7 @@ class PDFCotacao(FPDF):
         self.set_y(-15)
         self.set_font("Arial", "I", 8)
         self.cell(0, 10, f"Página {self.page_no()}", 0, 0, "C")
-    def add_cotacao_detalhada(self, cliente, vendedor, produtos):
+    def add_cotacao_detalhada(self, cliente, vendedor, produtos, observacoes):
         self.set_font("Arial", "", 10)
         self.cell(0, 8, f"Cliente: {cliente}", ln=True)
         self.cell(0, 8, f"Vendedor: {vendedor}", ln=True)
@@ -39,8 +40,7 @@ class PDFCotacao(FPDF):
         self.cell(30, 8, "Total", 1, 1, "R")
         self.set_font("Arial", "", 9)
         total_geral = 0
-        for prod in produtos:
-            nome, emb, qtde, unit = prod
+        for nome, emb, qtde, unit in produtos:
             total = float(qtde) * float(unit)
             total_geral += total
             self.cell(70, 8, nome, 1)
@@ -51,23 +51,40 @@ class PDFCotacao(FPDF):
         self.set_font("Arial", "B", 10)
         self.cell(150, 8, "TOTAL GERAL DA COTAÇÃO", 1)
         self.cell(30, 8, f"R$ {total_geral:,.2f}".replace(".", ","), 1, 1, "R")
+        if observacoes:
+            self.ln(5)
+            self.set_font("Arial", "B", 10)
+            self.cell(0, 8, "Observações:", ln=True)
+            self.set_font("Arial", "", 9)
+            for obs in observacoes:
+                self.multi_cell(0, 6, f"- {obs}")
+
+def parse_linhas(texto):
+    produtos = []
+    observacoes = []
+    linhas = texto.split("\n")
+    for linha in linhas:
+        if not linha.strip():
+            continue
+        if "em falta" in linha.lower():
+            observacoes.append(linha.strip())
+            continue
+        try:
+            partes = re.findall(r"(\d+[.,]?\d*)\s+(\w+)\s+(.+?)\s+(\d+[.,]\d{2})$", linha.strip())
+            if partes:
+                qtde, emb, nome, valor = partes[0]
+                produtos.append((nome.strip(), emb.strip(), float(qtde.replace(",", ".")), float(valor.replace(",", "."))))
+            else:
+                observacoes.append(linha.strip())
+        except:
+            observacoes.append(linha.strip())
+    return produtos, observacoes
 
 def gerar_pdf(cliente, vendedor, texto):
-    produtos = []
-    for linha in texto.split("\n"):
-        partes = linha.strip().split()
-        if len(partes) >= 4:
-            try:
-                qtde = float(partes[0])
-                emb = partes[1]
-                valor = float(partes[-1].replace(",", "."))
-                nome = " ".join(partes[2:-1])
-                produtos.append((nome, emb, qtde, valor))
-            except:
-                continue
+    produtos, observacoes = parse_linhas(texto)
     pdf = PDFCotacao()
     pdf.add_page()
-    pdf.add_cotacao_detalhada(cliente, vendedor, produtos)
+    pdf.add_cotacao_detalhada(cliente, vendedor, produtos, observacoes)
     temp_path = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
     pdf.output(temp_path.name)
     return temp_path.name
@@ -87,4 +104,4 @@ if st.button("📄 Gerar Cotação em PDF"):
         os.unlink(caminho_pdf)
 
 st.markdown("---")
-st.caption("Robô Fooderoso da Cotação • Padrão Rio Quality • Desenvolvido para uso comercial")
+st.caption("Robô Fooderoso da Cotação • Versão com tratamento de texto flexível e observações")
