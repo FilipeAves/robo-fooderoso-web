@@ -6,23 +6,32 @@ from datetime import datetime
 st.set_page_config(page_title="Robô Fooderoso da Cotação", layout="wide")
 
 st.title("🤖 Robô Fooderoso da Cotação")
-st.write("Cole abaixo o pedido do cliente ou envie uma imagem com o print do WhatsApp.")
+st.write("Preencha os dados abaixo para gerar a cotação automática com base nas planilhas.")
 
-# Área para colar o pedido
-cotacao_texto = st.text_area("📝 Pedido (texto ou colado do WhatsApp)", height=200)
+# Dados do cliente
+col1, col2 = st.columns(2)
+with col1:
+    cliente_codigo = st.text_input("🧾 Código do Cliente")
+with col2:
+    cliente_nome = st.text_input("🏷️ Nome do Cliente")
 
-# Upload de imagem (apenas interface, OCR ainda não ativo)
-imagem = st.file_uploader("📷 Envie imagem do pedido (print, etiqueta, etc.)", type=["png", "jpg", "jpeg"])
+# Pedido
+cotacao_texto = st.text_area("📝 Cole o texto da cotação aqui (ex: 2 cx óleo soya 900ml)", height=200)
 
-# Simulação de geração de PDF
+# Upload de imagem (OCR ainda não implementado)
+imagem = st.file_uploader("📷 Ou envie uma imagem com o pedido (simulado)", type=["png", "jpg", "jpeg"])
+
+# Ação
 if st.button("📄 Gerar Cotação em PDF"):
-    if cotacao_texto or imagem:
-        with st.spinner("Gerando PDF da cotação..."):
-            # Simulação de análise e geração
-            st.success("✅ Cotação gerada com sucesso! (PDF simulado)")
-            st.markdown("🔗 Em breve: link para baixar PDF aqui.")
+    if not cliente_codigo and not cliente_nome:
+        st.warning("⚠️ Informe pelo menos o código ou nome do cliente.")
+    elif not cotacao_texto and not imagem:
+        st.warning("⚠️ Insira o texto da cotação ou envie uma imagem.")
     else:
-        st.warning("⚠️ Por favor, cole o pedido ou envie uma imagem.")
+        with st.spinner("Analisando cotação e gerando PDF..."):
+            # Aqui será feita a lógica real no futuro
+            st.success("✅ Cotação gerada com sucesso! (simulado)")
+            st.markdown("🔗 Em breve: link para baixar PDF aqui.")
 
 st.markdown("---")
-st.caption("Versão inicial do Robô Fooderoso • Desenvolvido para Rio Quality")
+st.caption("Robô Fooderoso da Cotação • Desenvolvido para Rio Quality")
